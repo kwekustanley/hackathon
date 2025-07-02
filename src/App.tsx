@@ -260,7 +260,6 @@ export default function App() {
       <header className="bg-gradient-to-r from-red-600 via-orange-600 to-red-700 text-white py-6 px-4 shadow-2xl">
         <div className="max-w-5xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Shield size={28} className="text-white" />
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
               Flood & Weather Alert System
             </h1>
