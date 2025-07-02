@@ -319,7 +319,7 @@ export default function App() {
                 <Shield size={32} className="text-blue-600" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                Welcome to Ghana's Flood & Weather Alert System
+                Welcome to Route 360's Flood & Weather Alert System
               </h2>
               <p className="text-gray-600 mb-6 leading-relaxed">
                 Stay informed about weather conditions and flood risks in your area. 
