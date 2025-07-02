@@ -21,23 +21,8 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [weatherData, setWeatherData] = useState({
-    city: 'Loading...',
-    temperature: '--',
-    condition: 'Loading...',
-    rainfall: '--',
-    humidity: '--',
-    windSpeed: '--',
-    feelsLike: '--'
-  });
-
-  const [alertLevel, setAlertLevel] = useState({
-    level: 'Normal',
-    color: 'from-green-500 to-green-600',
-    borderColor: 'border-green-400',
-    explanation: ''
-  });
-
+  const [weatherData, setWeatherData] = useState(null);
+  const [alertLevel, setAlertLevel] = useState(null);
   const [forecast, setForecast] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationPopup, setShowLocationPopup] = useState(false);
@@ -216,17 +201,6 @@ export default function App() {
     }
   };
 
-  // Initialize with random data on component mount
-  useEffect(() => {
-    const initialWeather = generateRandomWeather();
-    const initialAlert = generateAlertLevel(initialWeather.rainfall, initialWeather.condition);
-    const initialForecast = generateForecast(initialWeather); // Pass current weather to forecast
-    
-    setWeatherData(initialWeather);
-    setAlertLevel(initialAlert);
-    setForecast(initialForecast);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Location Permission Popup */}
@@ -338,114 +312,164 @@ export default function App() {
           </div>
         </section>
 
-        {/* Alert Banner */}
-        <section 
-          id="alert-banner" 
-          className={`bg-gradient-to-r ${alertLevel.color} text-white p-3 rounded-lg shadow-lg border-l-4 ${alertLevel.borderColor}`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <AlertTriangle size={20} />
-            <span className="text-lg font-bold">Alert Level: {alertLevel.level}</span>
-          </div>
-        </section>
-
-        {/* Alert Explanation */}
-        <section className="bg-blue-50/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-blue-200/50">
-          <div className="flex items-start gap-3">
-            <Info size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Alert Explanation</h3>
-              <p className="text-blue-700 text-sm leading-relaxed">
-                <strong>Current Status:</strong> {alertLevel.explanation}
+        {/* Welcome Message - Only shown when no weather data */}
+        {!weatherData && !isLoading && (
+          <section className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg p-8 border border-blue-200/50 text-center">
+            <div className="max-w-2xl mx-auto">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield size={32} className="text-blue-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                Welcome to Ghana's Flood & Weather Alert System
+              </h2>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Stay informed about weather conditions and flood risks in your area. 
+                Enter your city name or use your current location to get started with real-time weather updates and safety alerts.
               </p>
-              <div className="mt-3 text-xs text-blue-600">
-                <p><strong>Alert levels are determined by:</strong> Rainfall amount (mm), weather conditions, and flood risk assessment for the area.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Search size={16} />
+                  <span>Search any city in Ghana</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <MapPin size={16} />
+                  <span>Use your current location</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Bell size={16} />
+                  <span>Get instant alerts</span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Weather Info Card */}
-        <section id="weather-info" className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/20">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Thermometer size={20} />
-            Current Weather
-          </h2>
-          <div className="grid lg:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 id="city-name" className="text-2xl font-bold text-gray-800">
-                  {weatherData.city}
-                </h3>
-                <div id="weather-icon" className="text-blue-500">
-                  {getWeatherIcon(weatherData.condition)}
-                </div>
-              </div>
-              <div id="temperature" className="text-4xl font-bold text-blue-600">
-                {weatherData.temperature}°C
-              </div>
-              <div id="condition" className="text-lg text-gray-600 capitalize font-medium">
-                {weatherData.condition}
-              </div>
+        {/* Loading State */}
+        {isLoading && (
+          <section className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-8 border border-white/20 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <p className="text-gray-600 font-medium">Getting weather information...</p>
             </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 text-blue-600 mb-1">
-                  <Droplets size={16} />
-                  <span className="font-semibold text-xs">Rainfall</span>
-                </div>
-                <div id="rainfall" className="text-xl font-bold text-gray-800">{weatherData.rainfall} mm</div>
-              </div>
-              
-              <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-3 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 text-teal-600 mb-1">
-                  <Eye size={16} />
-                  <span className="font-semibold text-xs">Humidity</span>
-                </div>
-                <div id="humidity" className="text-xl font-bold text-gray-800">{weatherData.humidity}%</div>
-              </div>
-              
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 text-purple-600 mb-1">
-                  <Wind size={16} />
-                  <span className="font-semibold text-xs">Wind Speed</span>
-                </div>
-                <div id="wind-speed" className="text-xl font-bold text-gray-800">{weatherData.windSpeed} km/h</div>
-              </div>
-              
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 text-orange-600 mb-1">
-                  <Thermometer size={16} />
-                  <span className="font-semibold text-xs">Feels Like</span>
-                </div>
-                <div className="text-xl font-bold text-gray-800">{weatherData.feelsLike}°C</div>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* 5-Day Forecast Section */}
-        <section id="forecast-section" className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/20">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Calendar size={20} />
-            5-Day Forecast
-          </h2>
-          <div className="overflow-x-auto">
-            <div className="flex gap-3 min-w-max">
-              {forecast.map((day, index) => (
-                <div key={index} className="forecast-card bg-gradient-to-br from-gray-50 to-gray-100 p-3 rounded-lg shadow-md min-w-[120px] text-center">
-                  <div className="forecast-date text-xs font-semibold text-gray-600 mb-2">{day.date}</div>
-                  <div className="forecast-icon text-blue-500 mb-2 flex justify-center">
-                    {React.cloneElement(day.icon, { size: 28 })}
+        {/* Alert Banner - Only shown when weather data exists */}
+        {weatherData && alertLevel && (
+          <section 
+            id="alert-banner" 
+            className={`bg-gradient-to-r ${alertLevel.color} text-white p-3 rounded-lg shadow-lg border-l-4 ${alertLevel.borderColor}`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <AlertTriangle size={20} />
+              <span className="text-lg font-bold">Alert Level: {alertLevel.level}</span>
+            </div>
+          </section>
+        )}
+
+        {/* Alert Explanation - Only shown when weather data exists */}
+        {weatherData && alertLevel && (
+          <section className="bg-blue-50/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-blue-200/50">
+            <div className="flex items-start gap-3">
+              <Info size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">Alert Explanation</h3>
+                <p className="text-blue-700 text-sm leading-relaxed">
+                  <strong>Current Status:</strong> {alertLevel.explanation}
+                </p>
+                <div className="mt-3 text-xs text-blue-600">
+                  <p><strong>Alert levels are determined by:</strong> Rainfall amount (mm), weather conditions, and flood risk assessment for the area.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Weather Info Card - Only shown when weather data exists */}
+        {weatherData && (
+          <section id="weather-info" className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/20">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Thermometer size={20} />
+              Current Weather
+            </h2>
+            <div className="grid lg:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 id="city-name" className="text-2xl font-bold text-gray-800">
+                    {weatherData.city}
+                  </h3>
+                  <div id="weather-icon" className="text-blue-500">
+                    {getWeatherIcon(weatherData.condition)}
                   </div>
-                  <div className="forecast-temp text-base font-bold text-gray-800 mb-1">{day.temperature}°C</div>
-                  <div className="forecast-condition text-xs text-gray-600 capitalize">{day.condition}</div>
                 </div>
-              ))}
+                <div id="temperature" className="text-4xl font-bold text-blue-600">
+                  {weatherData.temperature}°C
+                </div>
+                <div id="condition" className="text-lg text-gray-600 capitalize font-medium">
+                  {weatherData.condition}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg shadow-md">
+                  <div className="flex items-center gap-2 text-blue-600 mb-1">
+                    <Droplets size={16} />
+                    <span className="font-semibold text-xs">Rainfall</span>
+                  </div>
+                  <div id="rainfall" className="text-xl font-bold text-gray-800">{weatherData.rainfall} mm</div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-3 rounded-lg shadow-md">
+                  <div className="flex items-center gap-2 text-teal-600 mb-1">
+                    <Eye size={16} />
+                    <span className="font-semibold text-xs">Humidity</span>
+                  </div>
+                  <div id="humidity" className="text-xl font-bold text-gray-800">{weatherData.humidity}%</div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg shadow-md">
+                  <div className="flex items-center gap-2 text-purple-600 mb-1">
+                    <Wind size={16} />
+                    <span className="font-semibold text-xs">Wind Speed</span>
+                  </div>
+                  <div id="wind-speed" className="text-xl font-bold text-gray-800">{weatherData.windSpeed} km/h</div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 rounded-lg shadow-md">
+                  <div className="flex items-center gap-2 text-orange-600 mb-1">
+                    <Thermometer size={16} />
+                    <span className="font-semibold text-xs">Feels Like</span>
+                  </div>
+                  <div className="text-xl font-bold text-gray-800">{weatherData.feelsLike}°C</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
+
+        {/* 5-Day Forecast Section - Only shown when weather data exists */}
+        {weatherData && forecast.length > 0 && (
+          <section id="forecast-section" className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/20">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Calendar size={20} />
+              5-Day Forecast
+            </h2>
+            <div className="overflow-x-auto">
+              <div className="flex gap-3 min-w-max">
+                {forecast.map((day, index) => (
+                  <div key={index} className="forecast-card bg-gradient-to-br from-gray-50 to-gray-100 p-3 rounded-lg shadow-md min-w-[120px] text-center">
+                    <div className="forecast-date text-xs font-semibold text-gray-600 mb-2">{day.date}</div>
+                    <div className="forecast-icon text-blue-500 mb-2 flex justify-center">
+                      {React.cloneElement(day.icon, { size: 28 })}
+                    </div>
+                    <div className="forecast-temp text-base font-bold text-gray-800 mb-1">{day.temperature}°C</div>
+                    <div className="forecast-condition text-xs text-gray-600 capitalize">{day.condition}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Notify Me Section */}
         <section className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/20">
