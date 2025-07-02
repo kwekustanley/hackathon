@@ -26,6 +26,7 @@ export default function App() {
   const [forecast, setForecast] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationPopup, setShowLocationPopup] = useState(false);
+  const [showErrorNotification, setShowErrorNotification] = useState(false);
 
   // Expanded list of Ghana cities and towns
   const cities = [
@@ -132,15 +133,27 @@ export default function App() {
   };
 
   const handleSearch = () => {
-    setIsLoading(true);
     const cityInput = document.getElementById('city-input') as HTMLInputElement;
     const searchCity = cityInput?.value.trim();
     
+    // Check if user entered a city name
+    if (!searchCity) {
+      // Show modern error notification
+      setShowErrorNotification(true);
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        setShowErrorNotification(false);
+      }, 3000);
+      return;
+    }
+    
+    setIsLoading(true);
+    
     // Simulate API delay
     setTimeout(() => {
-      const newWeather = generateRandomWeather(searchCity || null);
+      const newWeather = generateRandomWeather(searchCity);
       const newAlert = generateAlertLevel(newWeather.rainfall, newWeather.condition);
-      const newForecast = generateForecast(newWeather); // Pass current weather to forecast
+      const newForecast = generateForecast(newWeather);
       
       setWeatherData(newWeather);
       setAlertLevel(newAlert);
@@ -165,7 +178,7 @@ export default function App() {
     setTimeout(() => {
       const newWeather = generateRandomWeather();
       const newAlert = generateAlertLevel(newWeather.rainfall, newWeather.condition);
-      const newForecast = generateForecast(newWeather); // Pass current weather to forecast
+      const newForecast = generateForecast(newWeather);
       
       setWeatherData(newWeather);
       setAlertLevel(newAlert);
@@ -201,8 +214,41 @@ export default function App() {
     }
   };
 
+  // Handle Enter key press in search input
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Error Notification */}
+      {showErrorNotification && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg shadow-lg max-w-md">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-red-800">
+                  Please enter a city name to search for weather information.
+                </p>
+              </div>
+              <div className="ml-auto pl-3">
+                <button
+                  onClick={() => setShowErrorNotification(false)}
+                  className="inline-flex text-red-400 hover:text-red-600 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Location Permission Popup */}
       {showLocationPopup && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -260,6 +306,7 @@ export default function App() {
       <header className="bg-gradient-to-r from-red-600 via-orange-600 to-red-700 text-white py-6 px-4 shadow-2xl">
         <div className="max-w-5xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
+           
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
               Flood & Weather Alert System
             </h1>
@@ -284,6 +331,7 @@ export default function App() {
                   type="text"
                   id="city-input"
                   placeholder="Enter your city or town"
+                  onKeyPress={handleKeyPress}
                   className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-all duration-300 text-sm shadow-sm hover:shadow-md"
                 />
               </div>
